@@ -23,6 +23,7 @@ class TodoApp extends React.Component {
       items.push({name: state.input})
       return {
         items : items,
+        input: '',
       }
     });
   }
