@@ -1,7 +1,17 @@
 class TodoItem {
   constructor(name) {
+    this._id = TodoItem.generateId();
     this.name = name;
     this.isCompleted = false;
+  }
+
+  static generateId() {
+    if (!this.latestId) {
+      return this.latestId = 1;
+    } else {
+      this.latestId++
+      return this.latestId;
+    }
   }
 }
 
@@ -16,7 +26,8 @@ class TodoApp extends React.Component {
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.updateAppState = this.updateAppState.bind(this);
+    this.handleAppState = this.handleAppState.bind(this);
+    this.handleItems = this.handleItems.bind(this);
   }
 
   handleChange(event) {
@@ -38,9 +49,15 @@ class TodoApp extends React.Component {
     });
   }
 
-  updateAppState(state) {
+  handleAppState(state) {
     this.setState({
-      applicationState: state
+      applicationState: state,
+    })
+  }
+
+  handleItems(items) {
+    this.setState({
+      items: items,
     })
   }
 
@@ -62,9 +79,9 @@ class TodoApp extends React.Component {
             type="text"
           />
         </form>
-        <Items items={items} />
+        <Items items={items} handleItems={this.handleItems} />
         {this.state.items.length === 0 ?
-          null : <Footer items={this.state.items} appState={this.updateAppState} />}
+          null : <Footer items={this.state.items} appState={this.handleAppState} />}
       </div>
     );
   }
@@ -75,8 +92,24 @@ class Items extends React.Component {
     super(props)
   }
 
+  toggle(e, id) {
+    const items = this.props.items.slice();
+    const currentItem = items.find(item => item._id === id);
+    const index = items.indexOf(currentItem);
+    currentItem.isCompleted = !currentItem.isCompleted;
+    items[index] = currentItem;
+    this.props.handleItems(items);
+  }
+
   render() {
-    const items = this.props.items.map((item, i) => <li key={i}>{item.name}</li>)
+    const items = this.props.items.map((item, i) =>
+      <li key={i}>
+        <label htmlFor={item._id}>
+          <input id={item._id} name="isItemDone" type="checkbox" onChange={(e) => this.toggle(e, item._id)} checked={item.isCompleted}></input>{item.name}
+        </label>
+        <button>DeleteMe</button>
+      </li>
+    );
     return (
       <ul>{items}</ul>
     );
@@ -93,7 +126,7 @@ class Footer extends React.Component {
   }
 
   render() {
-    const itemCount = this.props.items.length;
+    const itemCount = this.props.items.filter(item => !item.isCompleted).length;
     return (
       <div>
         <p>{itemCount} {itemCount > 1 ? "items" : "item"} left</p>
