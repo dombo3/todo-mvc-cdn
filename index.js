@@ -79,7 +79,7 @@ class TodoApp extends React.Component {
             type="text"
           />
         </form>
-        <Items items={items} handleItems={this.handleItems} />
+        <ItemsList items={items} handleItems={this.handleItems} />
         {this.state.items.length === 0 ?
           null : <Footer items={this.state.items} appState={this.handleAppState} />}
       </div>
@@ -87,12 +87,12 @@ class TodoApp extends React.Component {
   }
 }
 
-class Items extends React.Component {
+class ItemsList extends React.Component {
   constructor(props) {
     super(props)
   }
 
-  toggle(e, id) {
+  toggleActive(e, id) {
     const items = this.props.items.slice();
     const currentItem = items.find(item => item._id === id);
     const index = items.indexOf(currentItem);
@@ -101,13 +101,26 @@ class Items extends React.Component {
     this.props.handleItems(items);
   }
 
+  deleteItem(e, id) {
+    const items = this.props.items.slice();
+    const currentItem = items.find(item => item._id === id);
+    const index = items.indexOf(currentItem);
+    items.splice(index, 1);
+    this.props.handleItems(items);
+  }
+
+  doubleClick() {
+    alert("double Clicked")
+  }
+
   render() {
     const items = this.props.items.map((item, i) =>
       <li key={i}>
-        <label htmlFor={item._id}>
-          <input id={item._id} name="isItemDone" type="checkbox" onChange={(e) => this.toggle(e, item._id)} checked={item.isCompleted}></input>{item.name}
+        <input id={item._id} name="isItemDone" type="checkbox" onChange={(e) => this.toggleActive(e, item._id)} checked={item.isCompleted} />
+        <label onDoubleClick={this.doubleClick}>
+          {item.name}
         </label>
-        <button>DeleteMe</button>
+        <button onClick={(e) => this.deleteItem(e, item._id)}>DeleteMe</button>
       </li>
     );
     return (
