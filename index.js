@@ -1,8 +1,16 @@
+class TodoItem {
+  constructor(name) {
+    this.name = name;
+    this.isCompleted = false;
+  }
+}
+
+
 class TodoApp extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      items : [{name: "Do dishes"}, {name: "Do laundry"}],
+      items: [],
       input: '',
     }
 
@@ -20,27 +28,29 @@ class TodoApp extends React.Component {
     e.preventDefault();
     this.setState((state) => {
       const items = state.items.slice();
-      items.push({name: state.input})
+      items.push(new TodoItem(state.input))
       return {
-        items : items,
+        items: items,
         input: '',
       }
     });
   }
 
   render() {
-    console.log(this.state);
+
     return (
       <div>
         <h1>todos</h1>
         <form onSubmit={this.handleSubmit}>
-          <input 
-          onChange = {this.handleChange}
-          value={this.state.input}
-          type="text"
+          <input
+            onChange={this.handleChange}
+            value={this.state.input}
+            type="text"
           />
         </form>
-        <Items items={this.state.items}/>
+        <Items items={this.state.items} />
+        {this.state.items.length === 0 ? 
+          null : <Footer items={this.state.items} />}
       </div>
     );
   }
@@ -52,12 +62,16 @@ class Items extends React.Component {
   }
 
   render() {
-    console.log(this.props.items);
-    const items = this.props.items.map((item,i) => <li key={i}>{item.name}</li>)
+    const items = this.props.items.map((item, i) => <li key={i}>{item.name}</li>)
     return (
       <ul>{items}</ul>
     );
   }
+}
+
+function Footer(props) {
+  const itemCount = props.items.length;
+  return <p>{itemCount} {itemCount > 1 ? "items" : "item"} left</p>;
 }
 
 ReactDOM.render(<TodoApp />, document.getElementById("root"));
