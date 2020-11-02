@@ -5,20 +5,22 @@ class TodoItem {
   }
 }
 
-
 class TodoApp extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
       items: [],
       input: '',
+      applicationState: "all"
     }
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.updateAppState = this.updateAppState.bind(this);
   }
 
   handleChange(event) {
+    //Conditional Rendering?//
     this.setState({
       input: event.target.value
     })
@@ -36,7 +38,19 @@ class TodoApp extends React.Component {
     });
   }
 
+  updateAppState(state) {
+    this.setState({
+      applicationState: state
+    })
+  }
+
   render() {
+    let items = this.state.items;
+    if (this.state.applicationState === "onlyActive") {
+      items = items.filter(item => !item.isCompleted);
+    } else if (this.state.applicationState === "onlyCompleted") {
+      items = items.filter(item => item.isCompleted)
+    }
 
     return (
       <div>
@@ -48,9 +62,9 @@ class TodoApp extends React.Component {
             type="text"
           />
         </form>
-        <Items items={this.state.items} />
-        {this.state.items.length === 0 ? 
-          null : <Footer items={this.state.items} />}
+        <Items items={items} />
+        {this.state.items.length === 0 ?
+          null : <Footer items={this.state.items} appState={this.updateAppState} />}
       </div>
     );
   }
@@ -69,9 +83,27 @@ class Items extends React.Component {
   }
 }
 
-function Footer(props) {
-  const itemCount = props.items.length;
-  return <p>{itemCount} {itemCount > 1 ? "items" : "item"} left</p>;
+class Footer extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  handleClick(e, state) {
+    this.props.appState(state);
+  }
+
+  render() {
+    const itemCount = this.props.items.length;
+    return (
+      <div>
+        <p>{itemCount} {itemCount > 1 ? "items" : "item"} left</p>
+        {/*Create Enums for ApplicationState?*/}
+        <button onClick={(e) => this.handleClick(e, "all")}>All</button>
+        <button onClick={(e) => this.handleClick(e, "onlyActive")}>Active</button>
+        <button onClick={(e) => this.handleClick(e, "onlyCompleted")}>Completed</button>
+      </div>
+    );
+  }
 }
 
 ReactDOM.render(<TodoApp />, document.getElementById("root"));
