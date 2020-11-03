@@ -3,6 +3,7 @@ class TodoItem {
     this._id = TodoItem.generateId();
     this.name = name;
     this.isCompleted = false;
+    this.isEditable = false;
   }
 
   static generateId() {
@@ -90,6 +91,10 @@ class TodoApp extends React.Component {
 class ItemsList extends React.Component {
   constructor(props) {
     super(props)
+    //move me Down to Item class and use me to make a Controlled Input and constantly update edit Text
+    this.state = {
+      editText: ''
+    }
   }
 
   toggleActive(e, id) {
@@ -109,17 +114,87 @@ class ItemsList extends React.Component {
     this.props.handleItems(items);
   }
 
-  doubleClick() {
-    alert("double Clicked")
+  doubleClick(e, id) {
+    const items = this.props.items.slice();
+    items.forEach(item => item.isEditable = false);
+    const currentItem = items.find(item => item._id === id);
+    const index = items.indexOf(currentItem);
+    currentItem.isEditable = true;
+    items[index] = currentItem;
+
+    this.setState({
+      editText: currentItem.name
+    })
+    this.props.handleItems(items);
+  }
+
+  updateInput(e, id) {
+    const items = this.props.items.slice();
+    const currentItem = items.find(item => item._id === id);
+    const index = items.indexOf(currentItem);
+    currentItem.isEditable = false;
+    currentItem.name = e.target.value;
+    items[index] = currentItem;
+    this.props.handleItems(items);
+  }
+
+  handleSubmit(event, id) {
+    const items = this.props.items.slice();
+    const currentItem = items.find(item => item._id === id);
+    const index = items.indexOf(currentItem);
+    currentItem.isEditable = false;
+    currentItem.name = this.state.editText;
+    items[index] = currentItem;
+    this.setState({
+      editText: '',
+    })
+    this.props.handleItems(items);
+  }
+
+  handleKeyDown(event, id) {
+    if (event.which === 13) {
+      const items = this.props.items.slice();
+      const currentItem = items.find(item => item._id === id);
+      const index = items.indexOf(currentItem);
+      currentItem.isEditable = false;
+      currentItem.name = this.state.editText;
+      items[index] = currentItem;
+      this.setState({
+        editText: '',
+      })
+      this.props.handleItems(items);
+    }
+  }
+
+  handleChange(event) {
+    this.setState({
+      editText: event.target.value,
+    })
   }
 
   render() {
     const items = this.props.items.map((item, i) =>
       <li key={i}>
-        <input id={item._id} name="isItemDone" type="checkbox" onChange={(e) => this.toggleActive(e, item._id)} checked={item.isCompleted} />
-        <label onDoubleClick={this.doubleClick}>
-          {item.name}
-        </label>
+        <input
+          id={item._id}
+          name="isItemDone"
+          type="checkbox"
+          onChange={(e) => this.toggleActive(e, item._id)}
+          checked={item.isCompleted}
+        />
+
+        {item.isEditable
+          ? <input
+            type="text"
+            value={this.state.editText}
+            onChange={(e) => this.handleChange(e)}
+            onBlur={(e) => this.handleSubmit(e, item._id)}
+            // try handle multiple input based on tutorial
+            onKeyDown={(e) => this.handleKeyDown(e, item._id)} />
+          //get the id based on tutorial
+          : <label onDoubleClick={(e) => this.doubleClick(e, item._id)}>
+            {item.name}
+          </label>}
         <button onClick={(e) => this.deleteItem(e, item._id)}>DeleteMe</button>
       </li>
     );
