@@ -28,11 +28,13 @@ class TodoApp extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleAppState = this.handleAppState.bind(this);
-    this.handleItems = this.handleItems.bind(this);
+    this.handleToggle = this.handleToggle.bind(this);
+    this.handleEdit = this.handleEdit.bind(this);
+    this.handleSave = this.handleSave.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
   }
 
   handleChange(event) {
-    //Conditional Rendering?//
     this.setState({
       input: event.target.value
     })
@@ -56,19 +58,69 @@ class TodoApp extends React.Component {
     })
   }
 
-  handleItems(items) {
+  handleEdit(item) {
+    const items = this.state.items.slice();
+    items.forEach(item => item.isEditable = false);
+    item.isEditable = true;
+    // explain i === item
+    // console.log(items.find(i => i === item));
+    items[items.indexOf(item)] = item;
     this.setState({
-      items: items,
+      items: items
+    })
+  }
+
+  handleToggle(item) {
+    const items = this.state.items.slice();
+    // const currentItem = items.find(item => item._id === id);
+    const index = items.indexOf(item);
+    item.isCompleted = !item.isCompleted;
+    items[index] = item;
+    this.setState({
+      items: items
+    })
+  }
+
+  handleSave(item) {
+    const items = this.state.items.slice();
+    const index = items.indexOf(item);
+    item.isEditable = false;
+    items[items.indexOf(item)] = item;
+    this.setState({
+      items: items
+    })
+  }
+
+  handleDelete(item) {
+    //does not work when use it from onBlur
+    const items = this.state.items.slice();
+    const index = items.indexOf(item);
+    items.splice(index, 1);
+    this.setState({
+      items: items
     })
   }
 
   render() {
     let items = this.state.items;
+    console.log("Render items: " + items)
+
     if (this.state.applicationState === "onlyActive") {
       items = items.filter(item => !item.isCompleted);
     } else if (this.state.applicationState === "onlyCompleted") {
       items = items.filter(item => item.isCompleted)
     }
+
+    items = items.map((item) =>
+      <Item
+        key={item._id}
+        item={item}
+        onToggle={this.handleToggle}
+        onEdit={this.handleEdit}
+        onSave={this.handleSave}
+        onDelete={this.handleDelete}
+      />
+    );
 
     return (
       <div>
@@ -80,89 +132,21 @@ class TodoApp extends React.Component {
             type="text"
           />
         </form>
-        <ItemsList items={items} handleItems={this.handleItems} />
-        {this.state.items.length === 0 ?
-          null : <Footer items={this.state.items} appState={this.handleAppState} />}
+        <ul>{items}</ul>
+        {this.state.items.length === 0
+          ? null
+          : <Footer items={this.state.items} appState={this.handleAppState} />
+        }
       </div>
     );
   }
 }
 
-class ItemsList extends React.Component {
+class Item extends React.Component {
   constructor(props) {
     super(props)
-    //move me Down to Item class and use me to make a Controlled Input and constantly update edit Text
     this.state = {
       editText: ''
-    }
-  }
-
-  toggleActive(e, id) {
-    const items = this.props.items.slice();
-    const currentItem = items.find(item => item._id === id);
-    const index = items.indexOf(currentItem);
-    currentItem.isCompleted = !currentItem.isCompleted;
-    items[index] = currentItem;
-    this.props.handleItems(items);
-  }
-
-  deleteItem(e, id) {
-    const items = this.props.items.slice();
-    const currentItem = items.find(item => item._id === id);
-    const index = items.indexOf(currentItem);
-    items.splice(index, 1);
-    this.props.handleItems(items);
-  }
-
-  doubleClick(e, id) {
-    const items = this.props.items.slice();
-    items.forEach(item => item.isEditable = false);
-    const currentItem = items.find(item => item._id === id);
-    const index = items.indexOf(currentItem);
-    currentItem.isEditable = true;
-    items[index] = currentItem;
-
-    this.setState({
-      editText: currentItem.name
-    })
-    this.props.handleItems(items);
-  }
-
-  updateInput(e, id) {
-    const items = this.props.items.slice();
-    const currentItem = items.find(item => item._id === id);
-    const index = items.indexOf(currentItem);
-    currentItem.isEditable = false;
-    currentItem.name = e.target.value;
-    items[index] = currentItem;
-    this.props.handleItems(items);
-  }
-
-  handleSubmit(event, id) {
-    const items = this.props.items.slice();
-    const currentItem = items.find(item => item._id === id);
-    const index = items.indexOf(currentItem);
-    currentItem.isEditable = false;
-    currentItem.name = this.state.editText;
-    items[index] = currentItem;
-    this.setState({
-      editText: '',
-    })
-    this.props.handleItems(items);
-  }
-
-  handleKeyDown(event, id) {
-    if (event.which === 13) {
-      const items = this.props.items.slice();
-      const currentItem = items.find(item => item._id === id);
-      const index = items.indexOf(currentItem);
-      currentItem.isEditable = false;
-      currentItem.name = this.state.editText;
-      items[index] = currentItem;
-      this.setState({
-        editText: '',
-      })
-      this.props.handleItems(items);
     }
   }
 
@@ -172,14 +156,45 @@ class ItemsList extends React.Component {
     })
   }
 
+  handleSave(item) {
+    if (!this.state.editText) {
+      this.props.onDelete(item);
+    }
+    item.name = this.state.editText;
+    this.setState({
+      editText: '',
+    })
+    this.props.onSave(item);
+  }
+
+  handleKeyDown(item, event) {
+    if (event.which === 13) {
+      this.handleSave(item);
+    } else if (event.which === 27) {
+      this.props.onSave(item);
+      this.setState({
+        editText: '',
+      })
+    }
+  }
+
+  doubleClick(item) {
+    this.setState({
+      editText: item.name
+    })
+    this.props.onEdit(item);
+  }
+
   render() {
-    const items = this.props.items.map((item, i) =>
-      <li key={i}>
+    const item = this.props.item;
+    const id = item._id;
+
+    return (
+      <li>
         <input
-          id={item._id}
-          name="isItemDone"
           type="checkbox"
-          onChange={(e) => this.toggleActive(e, item._id)}
+          // use item insted of this
+          onChange={this.props.onToggle.bind(this, item)}
           checked={item.isCompleted}
         />
 
@@ -187,21 +202,17 @@ class ItemsList extends React.Component {
           ? <input
             type="text"
             value={this.state.editText}
-            onChange={(e) => this.handleChange(e)}
-            onBlur={(e) => this.handleSubmit(e, item._id)}
-            // try handle multiple input based on tutorial
-            onKeyDown={(e) => this.handleKeyDown(e, item._id)} />
-          //get the id based on tutorial
-          : <label onDoubleClick={(e) => this.doubleClick(e, item._id)}>
+            onChange={this.handleChange.bind(this)}
+            onBlur={this.handleSave.bind(this, item)}
+            onKeyDown={this.handleKeyDown.bind(this, item)} />
+          : <label onDoubleClick={this.doubleClick.bind(this, item)}>
             {item.name}
           </label>}
-        <button onClick={(e) => this.deleteItem(e, item._id)}>DeleteMe</button>
+        <button onClick={this.props.onDelete.bind(this, item)}>DeleteMe</button>
       </li>
     );
-    return (
-      <ul>{items}</ul>
-    );
   }
+
 }
 
 class Footer extends React.Component {
