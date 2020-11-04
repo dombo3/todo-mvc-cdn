@@ -92,7 +92,7 @@ class TodoApp extends React.Component {
   }
 
   handleDelete(item) {
-    //does not work when use it from onBlur
+    //does not work when use it from handleSave
     const items = this.state.items.slice();
     const index = items.indexOf(item);
     items.splice(index, 1);
@@ -103,7 +103,6 @@ class TodoApp extends React.Component {
 
   render() {
     let items = this.state.items;
-    console.log("Render items: " + items)
 
     if (this.state.applicationState === "onlyActive") {
       items = items.filter(item => !item.isCompleted);
@@ -123,21 +122,32 @@ class TodoApp extends React.Component {
     );
 
     return (
-      <div>
-        <h1>todos</h1>
-        <form onSubmit={this.handleSubmit}>
-          <input
-            onChange={this.handleChange}
-            value={this.state.input}
-            type="text"
-          />
-        </form>
-        <ul>{items}</ul>
-        {this.state.items.length === 0
-          ? null
-          : <Footer items={this.state.items} appState={this.handleAppState} />
-        }
-      </div>
+      <main id="main">
+        <h1 className="header">todos</h1>
+        <section id="todo-box">
+          <form
+            onSubmit={this.handleSubmit}
+            id="input-form"
+          >
+            <input
+              id="input-bar"
+              onChange={this.handleChange}
+              value={this.state.input}
+              type="text"
+              placeholder="What needs to be done?"
+            />
+          </form>
+          {this.state.items.length === 0 
+            ? null
+            : <section id="todo-list-box">
+                <input id="toggle-all" className="toggle-all" type="checkbox"></input>
+                <label htmlFor="toggle-all"></label>
+                <ul id="todo-list">{items}</ul>
+                <Footer items={this.state.items} appState={this.handleAppState} />
+              </section>
+          }
+        </section>
+      </main>
     );
   }
 }
@@ -193,10 +203,12 @@ class Item extends React.Component {
       <li>
         <input
           type="checkbox"
-          // use item insted of this
           onChange={this.props.onToggle.bind(this, item)}
           checked={item.isCompleted}
+          className="todo-toggle"
+          id={"todo-toggle-" + item._id}
         />
+        <label className="todo-toggle-label" htmlFor={"todo-toggle-" + item._id}></label>
 
         {item.isEditable
           ? <input
@@ -205,7 +217,9 @@ class Item extends React.Component {
             onChange={this.handleChange.bind(this)}
             onBlur={this.handleSave.bind(this, item)}
             onKeyDown={this.handleKeyDown.bind(this, item)} />
-          : <label onDoubleClick={this.doubleClick.bind(this, item)}>
+          : <label 
+            id="todo-label"
+            onDoubleClick={this.doubleClick.bind(this, item)}>
             {item.name}
           </label>}
         <button onClick={this.props.onDelete.bind(this, item)}>DeleteMe</button>
