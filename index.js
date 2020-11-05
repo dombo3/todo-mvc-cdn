@@ -198,7 +198,7 @@ class Item extends React.Component {
   render() {
     const item = this.props.item;
     const listItem = item.isEditable
-    ? <li>
+      ? <li>
         <input
           id="todo-edit"
           type="text"
@@ -207,7 +207,7 @@ class Item extends React.Component {
           onBlur={this.handleSave.bind(this, item)}
           onKeyDown={this.handleKeyDown.bind(this, item)} />
       </li>
-    : <li>
+      : <li>
         <input
           type="checkbox"
           onChange={this.props.onToggle.bind(this, item)}
@@ -221,10 +221,10 @@ class Item extends React.Component {
           onDoubleClick={this.doubleClick.bind(this, item)}>
           {item.name}
         </label>
-        <button 
+        <button
           id="delete"
           onClick={this.props.onDelete.bind(this, item)}></button>
-    </li>
+      </li>
 
     return listItem;
   }
@@ -237,19 +237,28 @@ class Footer extends React.Component {
   }
 
   handleClick(e, state) {
+    const current = e.target;
+    current.classList.add('selected');
+    const parent = e.target.parentNode;
+    const siblings = [].slice.call(parent.children).filter(function(child) {
+      return child !== current;
+    });
+    siblings.forEach(sibling => sibling.classList.remove('selected'));
     this.props.appState(state);
   }
 
   render() {
     const itemCount = this.props.items.filter(item => !item.isCompleted).length;
     return (
-      <div>
+      <footer>
         <p>{itemCount} {itemCount > 1 ? "items" : "item"} left</p>
         {/*Create Enums for ApplicationState?*/}
-        <button onClick={(e) => this.handleClick(e, "all")}>All</button>
-        <button onClick={(e) => this.handleClick(e, "onlyActive")}>Active</button>
-        <button onClick={(e) => this.handleClick(e, "onlyCompleted")}>Completed</button>
-      </div>
+        <div className="filters">
+          <button id="all" className="selected" onClick={(e) => this.handleClick(e, "all")}>All</button>
+          <button id="active" onClick={(e) => this.handleClick(e, "onlyActive")}>Active</button>
+          <button id="completed" onClick={(e) => this.handleClick(e, "onlyCompleted")}>Completed</button>
+        </div>
+      </footer>
     );
   }
 }
