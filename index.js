@@ -137,14 +137,14 @@ class TodoApp extends React.Component {
               placeholder="What needs to be done?"
             />
           </form>
-          {this.state.items.length === 0 
+          {this.state.items.length === 0
             ? null
             : <section id="todo-list-box">
-                <input id="toggle-all" className="toggle-all" type="checkbox"></input>
-                <label htmlFor="toggle-all"></label>
-                <ul id="todo-list">{items}</ul>
-                <Footer items={this.state.items} appState={this.handleAppState} />
-              </section>
+              <input id="toggle-all" className="toggle-all" type="checkbox"></input>
+              <label htmlFor="toggle-all"></label>
+              <ul id="todo-list">{items}</ul>
+              <Footer items={this.state.items} appState={this.handleAppState} />
+            </section>
           }
         </section>
       </main>
@@ -197,10 +197,17 @@ class Item extends React.Component {
 
   render() {
     const item = this.props.item;
-    const id = item._id;
-
-    return (
-      <li>
+    const listItem = item.isEditable
+    ? <li>
+        <input
+          id="todo-edit"
+          type="text"
+          value={this.state.editText}
+          onChange={this.handleChange.bind(this)}
+          onBlur={this.handleSave.bind(this, item)}
+          onKeyDown={this.handleKeyDown.bind(this, item)} />
+      </li>
+    : <li>
         <input
           type="checkbox"
           onChange={this.props.onToggle.bind(this, item)}
@@ -209,22 +216,17 @@ class Item extends React.Component {
           id={"todo-toggle-" + item._id}
         />
         <label className="todo-toggle-label" htmlFor={"todo-toggle-" + item._id}></label>
+        <label
+          id="todo-label"
+          onDoubleClick={this.doubleClick.bind(this, item)}>
+          {item.name}
+        </label>
+        <button 
+          id="delete"
+          onClick={this.props.onDelete.bind(this, item)}></button>
+    </li>
 
-        {item.isEditable
-          ? <input
-            type="text"
-            value={this.state.editText}
-            onChange={this.handleChange.bind(this)}
-            onBlur={this.handleSave.bind(this, item)}
-            onKeyDown={this.handleKeyDown.bind(this, item)} />
-          : <label 
-            id="todo-label"
-            onDoubleClick={this.doubleClick.bind(this, item)}>
-            {item.name}
-          </label>}
-        <button onClick={this.props.onDelete.bind(this, item)}>DeleteMe</button>
-      </li>
-    );
+    return listItem;
   }
 
 }

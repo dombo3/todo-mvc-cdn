@@ -38,7 +38,6 @@ body {
   padding-left: 40px;
   border: none;
   color: #4d4d4d;
-  /* border-bottom: 1px solid #ededed; */
   box-shadow: inset 0 -2px 1px rgba(0,0,0,0.03);
 }
 
@@ -90,9 +89,9 @@ ul {
 
 #todo-list > li {
   display: flex;
-  padding: 10px 0px;
   background-color: white;
   border-bottom: 1px solid #ededed;
+  position: relative;
 }
 
 #todo-list > li > .todo-toggle {
@@ -100,15 +99,31 @@ ul {
   left: -9999px;
 }
 
-#todo-list > li > #todo-label {
+#todo-label, #todo-edit {
   flex-grow: 1;
   word-break: break-all;
-  padding-left: 30px;
+  margin-left: 40px;
+  padding: 10px 0px;
+}
+
+#todo-edit {
+  font-family: inherit;
+  font-size: 100%;
+  color: inherit;
+  border: 1px solid #999;
+  box-shadow: inset 0px 0px 3px 0px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+}
+
+.todo-toggle-label {
+  position: relative;
 }
 
 .todo-toggle-label::before {
   position: absolute;
   left: 5px;
+  top: 50%;
+  transform: translateY(-50%);
   content: "";
   width: 20px;
   height: 20px;
@@ -125,6 +140,36 @@ ul {
   color: lightgreen;
 }
 
-#todo-list > li > button {
+/* button {
+  border: 0;
+  padding: 0;
+  font-size: 100%;
+  font-family: inherit;
+  background-color: white;
+} */
 
+#delete {
+  display: none;
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  border: 0;
+  padding: 0;
+  font-size: 100%;
+  font-family: inherit;
+  background-color: white;
+}
+
+#delete::after {
+  content: "×";
+}
+
+#todo-list li:hover #delete {
+  display: block;
+  color: rgba(213, 140, 140, 0.7);
+}
+
+#todo-list li #delete:hover {
+  transition: color .3s ease-in;
+  color: rgba(213, 140, 140);
 }
