@@ -32,6 +32,7 @@ class TodoApp extends React.Component {
     this.handleEdit = this.handleEdit.bind(this);
     this.handleSave = this.handleSave.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
+    this.clearCompleted = this.clearCompleted.bind(this);
   }
 
   handleChange(event) {
@@ -101,6 +102,14 @@ class TodoApp extends React.Component {
     })
   }
 
+  clearCompleted() {
+    const items = this.state.items.slice();
+    const activeItems = items.filter(item => !item.isCompleted);
+    this.setState({
+      items: activeItems,
+    })
+  }
+
   render() {
     let items = this.state.items;
 
@@ -143,7 +152,11 @@ class TodoApp extends React.Component {
               <input id="toggle-all" className="toggle-all" type="checkbox"></input>
               <label htmlFor="toggle-all"></label>
               <ul id="todo-list">{items}</ul>
-              <Footer items={this.state.items} appState={this.handleAppState} />
+              <Footer 
+                items={this.state.items} 
+                appState={this.handleAppState}
+                clearCompleted={this.clearCompleted}
+              />
             </section>
           }
         </section>
@@ -248,16 +261,18 @@ class Footer extends React.Component {
   }
 
   render() {
-    const itemCount = this.props.items.filter(item => !item.isCompleted).length;
+    const activeItemCount = this.props.items.filter(item => !item.isCompleted).length;
+    const completedItemCount = this.props.items.filter(item => item.isCompleted).length;
     return (
       <footer>
-        <p>{itemCount} {itemCount > 1 ? "items" : "item"} left</p>
+        <p>{activeItemCount} {activeItemCount > 1 ? "items" : "item"} left</p>
         {/*Create Enums for ApplicationState?*/}
         <div className="filters">
           <button id="all" className="selected" onClick={(e) => this.handleClick(e, "all")}>All</button>
           <button id="active" onClick={(e) => this.handleClick(e, "onlyActive")}>Active</button>
           <button id="completed" onClick={(e) => this.handleClick(e, "onlyCompleted")}>Completed</button>
         </div>
+        {completedItemCount > 0 && <button id="clear-all" onClick={this.props.clearCompleted.bind(this)} >Clear completed</button>}
       </footer>
     );
   }
