@@ -77,6 +77,10 @@ class TodoApp extends React.Component {
     const index = items.indexOf(item);
     item.isCompleted = !item.isCompleted;
     items[index] = item;
+    
+    const toggleAll = document.querySelector("#toggle-all")
+    toggleAll.checked = !items.find(item => !item.isCompleted);
+
     this.setState({
       items: items
     })
@@ -107,6 +111,14 @@ class TodoApp extends React.Component {
     const activeItems = items.filter(item => !item.isCompleted);
     this.setState({
       items: activeItems,
+    })
+  }
+
+  toggleAll(event) {
+    const items = this.state.items.slice();
+    items.forEach(item => item.isCompleted = event.target.checked);
+    this.setState({
+      items: items,
     })
   }
 
@@ -149,7 +161,7 @@ class TodoApp extends React.Component {
           {this.state.items.length === 0
             ? null
             : <section id="todo-list-box">
-              <input id="toggle-all" className="toggle-all" type="checkbox"></input>
+              <input id="toggle-all" className="toggle-all" type="checkbox" onClick={this.toggleAll.bind(this)}></input>
               <label htmlFor="toggle-all"></label>
               <ul id="todo-list">{items}</ul>
               <Footer 
@@ -208,14 +220,6 @@ class Item extends React.Component {
     this.props.onEdit(item);
   }
 
-  onToggle(item, event) {
-    const parent = event.target.parentNode;
-    console.log(parent);
-    const todoLabel = parent.querySelector("#todo-label");
-    todoLabel.classList.toggle("completed");
-    this.props.onToggle(item);
-  }
-
   render() {
     const item = this.props.item;
     const listItem = item.isEditable
@@ -231,14 +235,15 @@ class Item extends React.Component {
       : <li>
         <input
           type="checkbox"
-          onChange={this.onToggle.bind(this, item)}
+          onChange={this.props.onToggle.bind(this, item)}
           checked={item.isCompleted}
-          className="todo-toggle"
+          className={"todo-toggle"}
           id={"todo-toggle-" + item._id}
         />
         <label className="todo-toggle-label" htmlFor={"todo-toggle-" + item._id}></label>
         <label
           id="todo-label"
+          className={item.isCompleted ? "completed" : undefined}
           onDoubleClick={this.doubleClick.bind(this, item)}>
           {item.name}
         </label>
