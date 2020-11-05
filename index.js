@@ -208,6 +208,14 @@ class Item extends React.Component {
     this.props.onEdit(item);
   }
 
+  onToggle(item, event) {
+    const parent = event.target.parentNode;
+    console.log(parent);
+    const todoLabel = parent.querySelector("#todo-label");
+    todoLabel.classList.toggle("completed");
+    this.props.onToggle(item);
+  }
+
   render() {
     const item = this.props.item;
     const listItem = item.isEditable
@@ -223,7 +231,7 @@ class Item extends React.Component {
       : <li>
         <input
           type="checkbox"
-          onChange={this.props.onToggle.bind(this, item)}
+          onChange={this.onToggle.bind(this, item)}
           checked={item.isCompleted}
           className="todo-toggle"
           id={"todo-toggle-" + item._id}
