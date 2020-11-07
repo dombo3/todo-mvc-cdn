@@ -262,7 +262,7 @@ class Item extends React.Component {
         </label>
         <button
           id="delete"
-          onClick={this.props.onDelete.bind(this, item)}></button> */}
+          onClick={this.props.onDelete.bind(this, item)}></button>
       </li>
 
     return listItem;
