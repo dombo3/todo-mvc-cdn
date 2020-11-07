@@ -97,7 +97,6 @@ class TodoApp extends React.Component {
   }
 
   handleDelete(item) {
-    //does not work when use it from handleSave
     const items = this.state.items.slice();
     const index = items.indexOf(item);
     items.splice(index, 1);
@@ -124,6 +123,12 @@ class TodoApp extends React.Component {
 
   render() {
     let items = this.state.items;
+
+    items.forEach(item => {
+      if (item.name === "") {
+        this.handleDelete(item);
+      };
+    })
 
     if (this.state.applicationState === "onlyActive") {
       items = items.filter(item => !item.isCompleted);
@@ -180,6 +185,7 @@ class TodoApp extends React.Component {
 class Item extends React.Component {
   constructor(props) {
     super(props)
+    this.editTodoInput = React.createRef();
     this.state = {
       editText: ''
     }
@@ -192,9 +198,6 @@ class Item extends React.Component {
   }
 
   handleSave(item) {
-    if (!this.state.editText) {
-      this.props.onDelete(item);
-    }
     item.name = this.state.editText;
     this.setState({
       editText: '',
@@ -220,6 +223,14 @@ class Item extends React.Component {
     this.props.onEdit(item);
   }
 
+  componentDidUpdate(props) {
+    if (props.item.isEditable) {
+      const element = this.editTodoInput.current;
+      element.focus();
+      element.setSelectionRange(element.value.length, element.value.length)
+    }
+  }
+
   render() {
     const item = this.props.item;
     const listItem = item.isEditable
@@ -227,10 +238,12 @@ class Item extends React.Component {
         <input
           id="todo-edit"
           type="text"
+          ref={this.editTodoInput}
           value={this.state.editText}
           onChange={this.handleChange.bind(this)}
           onBlur={this.handleSave.bind(this, item)}
-          onKeyDown={this.handleKeyDown.bind(this, item)} />
+          onKeyDown={this.handleKeyDown.bind(this, item)}
+        />
       </li>
       : <li>
         <input
