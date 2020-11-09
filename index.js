@@ -287,9 +287,6 @@ class Footer extends React.Component {
   }
 
   render() {
-    console.log("rendered Footer");
-    console.log(this.props.completedItemCount)
-    console.log(this.props.activeItemCount);
     return (
       <footer>
         <p>{this.props.activeItemCount} {this.props.activeItemCount > 1 ? "items" : "item"} left</p>
