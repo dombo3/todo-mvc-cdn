@@ -1,3 +1,9 @@
+const APP_ALL = "all";
+const APP_ACTIVE = "active";
+const APP_COMPLETED = "completed";
+const ENTER_KEYCODE = 13;
+const ESCAPE_KEYCODE = 27;
+
 class TodoItem {
   constructor(name) {
     this._id = TodoItem.generateId();
@@ -22,12 +28,12 @@ class TodoApp extends React.Component {
     this.state = {
       items: [],
       input: '',
-      applicationState: "all"
+      filter: APP_ALL
     }
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleAppState = this.handleAppState.bind(this);
+    this.handleFilter = this.handleFilter.bind(this);
     this.handleToggle = this.handleToggle.bind(this);
     this.handleEdit = this.handleEdit.bind(this);
     this.handleSave = this.handleSave.bind(this);
@@ -53,9 +59,9 @@ class TodoApp extends React.Component {
     });
   }
 
-  handleAppState(state) {
+  handleFilter(filter) {
     this.setState({
-      applicationState: state,
+      filter: filter,
     })
   }
 
@@ -130,11 +136,14 @@ class TodoApp extends React.Component {
       };
     })
 
-    if (this.state.applicationState === "onlyActive") {
+    if (this.state.filter === APP_ACTIVE) {
       items = items.filter(item => !item.isCompleted);
-    } else if (this.state.applicationState === "onlyCompleted") {
+    } else if (this.state.filter === APP_COMPLETED) {
       items = items.filter(item => item.isCompleted)
     }
+
+    let activeItemCount = items.filter(item => !item.isCompleted).length
+    let completedItemCount = items.filter(item => item.isCompleted).length
 
     items = items.map((item) =>
       <Item
@@ -170,8 +179,10 @@ class TodoApp extends React.Component {
               <label htmlFor="toggle-all"></label>
               <ul id="todo-list">{items}</ul>
               <Footer 
-                items={this.state.items} 
-                appState={this.handleAppState}
+                filter={this.state.filter}
+                activeItemCount = {activeItemCount}
+                completedItemCount = {completedItemCount}
+                handleFilter={this.handleFilter}
                 clearCompleted={this.clearCompleted}
               />
             </section>
@@ -206,9 +217,9 @@ class Item extends React.Component {
   }
 
   handleKeyDown(item, event) {
-    if (event.which === 13) {
+    if (event.which === ENTER_KEYCODE) {
       this.handleSave(item);
-    } else if (event.which === 27) {
+    } else if (event.which === ESCAPE_KEYCODE) {
       this.props.onSave(item);
       this.setState({
         editText: '',
@@ -248,7 +259,7 @@ class Item extends React.Component {
       : <li>
         <input
           type="checkbox"
-          onChange={this.props.onToggle.bind(this, item)}
+          onChange={(e) => this.props.onToggle(item, e)}
           checked={item.isCompleted}
           className={"todo-toggle"}
           id={"todo-toggle-" + item._id}
@@ -262,7 +273,7 @@ class Item extends React.Component {
         </label>
         <button
           id="delete"
-          onClick={this.props.onDelete.bind(this, item)}></button>
+          onClick={(e) => this.props.onDelete(item, e)}></button>
       </li>
 
     return listItem;
@@ -275,32 +286,51 @@ class Footer extends React.Component {
     super(props);
   }
 
-  handleClick(e, state) {
-    const current = e.target;
-    current.classList.add('selected');
-    const parent = e.target.parentNode;
-    const siblings = [].slice.call(parent.children).filter(function(child) {
-      return child !== current;
-    });
-    siblings.forEach(sibling => sibling.classList.remove('selected'));
-    this.props.appState(state);
+  render() {
+    console.log("rendered Footer");
+    console.log(this.props.completedItemCount)
+    console.log(this.props.activeItemCount);
+    return (
+      <footer>
+        <p>{this.props.activeItemCount} {this.props.activeItemCount > 1 ? "items" : "item"} left</p>
+        <Filters>
+          <FilterButton filterName={APP_ALL} filter={this.props.filter} handleClick={(e) => this.props.handleFilter(APP_ALL, e)}/>
+          <FilterButton filterName={APP_ACTIVE} filter={this.props.filter} handleClick={(e) => this.props.handleFilter(APP_ACTIVE, e)}/>
+          <FilterButton filterName={APP_COMPLETED} filter={this.props.filter} handleClick={(e) => this.props.handleFilter(APP_COMPLETED, e)}/>
+        </Filters>
+        {this.props.completedItemCount > 0 && <button id="clear-all" onClick={this.props.clearCompleted} >Clear completed</button>}
+      </footer>
+    );
+  }
+}
+
+class Filters extends React.Component {
+  constructor(props) {
+    super(props);
   }
 
   render() {
-    const activeItemCount = this.props.items.filter(item => !item.isCompleted).length;
-    const completedItemCount = this.props.items.filter(item => item.isCompleted).length;
-    return (
-      <footer>
-        <p>{activeItemCount} {activeItemCount > 1 ? "items" : "item"} left</p>
-        {/*Create Enums for ApplicationState?*/}
-        <div className="filters">
-          <button id="all" className="selected" onClick={(e) => this.handleClick(e, "all")}>All</button>
-          <button id="active" onClick={(e) => this.handleClick(e, "onlyActive")}>Active</button>
-          <button id="completed" onClick={(e) => this.handleClick(e, "onlyCompleted")}>Completed</button>
-        </div>
-        {completedItemCount > 0 && <button id="clear-all" onClick={this.props.clearCompleted.bind(this)} >Clear completed</button>}
-      </footer>
-    );
+    return <div className="filters">{this.props.children}</div>
+  }
+}
+
+class FilterButton extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  capitalize(filterName) {
+    return filterName.charAt(0).toUpperCase() + filterName.slice(1)
+  }
+
+  render() {
+    let filterName = this.props.filterName;
+    return <button 
+              id={filterName}
+              className={this.props.filter === filterName ? "selected" : undefined} 
+              onClick={this.props.handleClick}>
+              {this.capitalize(filterName)}
+            </button>
   }
 }
 
