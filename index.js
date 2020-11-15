@@ -282,10 +282,6 @@ class Item extends React.Component {
 }
 
 class Footer extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     return (
       <footer>
@@ -302,26 +298,18 @@ class Footer extends React.Component {
 }
 
 class Filters extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     return <div className="filters">{this.props.children}</div>
   }
 }
 
 class FilterButton extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  capitalize(filterName) {
-    return filterName.charAt(0).toUpperCase() + filterName.slice(1)
+  capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1)
   }
 
   render() {
-    let filterName = this.props.filterName;
+    const filterName = this.props.filterName;
     return <button 
               id={filterName}
               className={this.props.filter === filterName ? "selected" : undefined} 
